@@ -3,17 +3,15 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.products import Product
 from app.schemas.products import ProductCreate, ProductResponse
+from app.services.product_service import ProductService
 from typing import List
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
-    new_product = Product(**product.model_dump())
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
-    return new_product
+    product_service = ProductService(db)
+    return product_service.create_product(product)
 
 @router.get("/", response_model=List[ProductResponse])
 def get_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
